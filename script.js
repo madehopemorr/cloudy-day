@@ -1,25 +1,43 @@
 var apiKey = "64d602597cd9f5d3bc5809890d14faef"
-//starting sidebar search words
-var sideCities = ["Atlanta", "Austin", "New Orleans"]
-//pulls past search from local storage
-var savedSearch = localStorage.getItem("searched word")
 
-if (localStorage.getItem("initialSearchTerm")) {
-  var initialSearch = localStorage.getItem("initialSearchTerm")
-  runSearchBar(initialSearch)
-  sideCities.push(initialSearch.charAt(0).toUpperCase() + initialSearch.slice(1))
-  renderSearchHistory(initialSearch)
+//pulls past search from local storage
+var savedSearch = JSON.parse(localStorage.getItem("search-city")) || [];
+
+if (savedSearch.length > 0) {
+  //rendering the li items for previous search cities
+  for(var i = 0; i < savedSearch.length; i++) {
+    renderSavedCities(savedSearch[i])
+  }
+  //rendering last searched city
+  var lastIndex = savedSearch.length - 1;
+  currentWeather(savedSearch[lastIndex])
 }
 ////create on.click event for search button
 $("#search-button").on("click", function (event) {
   event.preventDefault();
   var searchCity = $("#search-text").val().trim()
-  sideCities.push(searchCity.charAt(0).toUpperCase() + searchCity.slice(1))
-  localStorage.setItem("searched city", searchCity)
-  //runSearchBar(searchCity);
-  //renderSearchHistory();
+  //saving it to localstorage item
+  if (savedSearch.indexOf(searchCity) === -1) {
+    savedSearch.push(searchCity)
+    localStorage.setItem("search-city", JSON.stringify(savedSearch))
+    //add li element on my sidebar
+    renderSavedCities(searchCity)
+  }
+console.log(savedSearch)
   //calling current weather api
   currentWeather(searchCity)
+})
+
+function renderSavedCities(previousCityName) {
+  var newLiElement = $("<li>")
+  newLiElement.text(previousCityName)
+  $("#city-search").append(newLiElement)
+}
+
+//eventlistener for li items
+$("#city-search").on("click", "li", function(){
+  console.log($(this).text())
+ currentWeather($(this).text())
 })
 
 //one call
@@ -33,9 +51,11 @@ function currentWeather(cityName) {
     .then(function (response) {
       console.log(response)
       $("#current-city").text(response.name)
-      $("#current-temp").text("Temperature: " + response.main.temp)
-      $("#current-humid").text("Humidity: " + response.main.humidity)
-      $("#current-wind").text("Wind Speed: " + response.wind.speed)
+      $("#current-temp").text("Temperature: " + response.main.temp + " F")
+      $("#current-humid").text("Humidity: " + response.main.humidity + " %")
+      $("#current-wind").text("Wind Speed: " + response.wind.speed + " MPH")
+
+
 
       //need to look in api for what to run above
       var lat = response.coord.lat
@@ -56,7 +76,7 @@ function oneCallWeather(lat, lon) {
     console.log(oneCallResponse)
     var uvIndex = oneCallResponse.current.uvi
     $("#uv-index-value").text(uvIndex)
-    
+
     if (uvIndex > 5) {
       $("#uv-index-value").addClass('severe')
     } else if (uvIndex < 5 && uvIndex > 2) {
@@ -64,34 +84,38 @@ function oneCallWeather(lat, lon) {
     } else {
       $("#uv-index-value").addClass('favorable')
     }
-
+   
     //setting up forecast values
     console.log(oneCallResponse.daily)
     var day1Date = oneCallResponse.daily[0].dt
-    var date = new Date(day1Date).toLocaleDateString("en-US");
-      console.log(date)
-      //dates --need to convert units
-      $("#card-one-date").text(oneCallResponse.daily[0].dt)
-      $("#card-two-date").text(oneCallResponse.daily[1].dt)
-      $("#card-three-date").text(oneCallResponse.daily[2].dt)
-      $("#card-four-date").text(oneCallResponse.daily[3].dt)
-      $("#card-five-date").text(oneCallResponse.daily[4].dt)
-      //temp and humidity
-      $("#card-one-temp").text(oneCallResponse.daily[0].temp.day)
-      $("#card-one-humid").text(oneCallResponse.daily[0].humidity)
-      $("#card-two-temp").text(oneCallResponse.daily[1].temp.day)
-      $("#card-two-humid").text(oneCallResponse.daily[1].humidity)
-      $("#card-three-temp").text(oneCallResponse.daily[2].temp.day)
-      $("#card-three-humid").text(oneCallResponse.daily[2].humidity)
-      $("#card-four-temp").text(oneCallResponse.daily[3].temp.day)
-      $("#card-four-humid").text(oneCallResponse.daily[3].humidity)
-      $("#card-five-temp").text(oneCallResponse.daily[4].temp.day)
-      $("#card-five-humid").text(oneCallResponse.daily[4].humidity)
-      
+    var date = new Date(day1Date * 1000).toLocaleDateString("en-US");
+    console.log(date)
+    //dates --need to convert units
+    $("#card-one-date").text(date)
+    var day2Date = new Date(oneCallResponse.daily[1].dt * 1000).toLocaleDateString("en-US")
+    $("#card-two-date").text(day2Date)
+    var day3Date = new Date(oneCallResponse.daily[2].dt * 1000).toLocaleDateString("en-US")
+    $("#card-three-date").text(day3Date)
+    var day4Date = new Date(oneCallResponse.daily[3].dt * 1000).toLocaleDateString("en-US")
+    $("#card-four-date").text(day4Date)
+    var day5Date = new Date(oneCallResponse.daily[4].dt * 1000).toLocaleDateString("en-US")
+    $("#card-five-date").text(day5Date)
+    //temp and humidity
+    $("#card-one-temp").text("Temp: " + oneCallResponse.daily[0].temp.day + " F")
+    $("#card-one-humid").text("Humidity: " + oneCallResponse.daily[0].humidity + " %")
+    $("#card-two-temp").text("Temp: " + oneCallResponse.daily[1].temp.day + " F")
+    $("#card-two-humid").text("Humidity: " + oneCallResponse.daily[1].humidity + " %")
+    $("#card-three-temp").text("Temp: " + oneCallResponse.daily[2].temp.day + " F")
+    $("#card-three-humid").text("Humidity: " + oneCallResponse.daily[2].humidity + " %")
+    $("#card-four-temp").text("Temp: " + oneCallResponse.daily[3].temp.day + " F")
+    $("#card-four-humid").text("Humidity: " + oneCallResponse.daily[3].humidity + " %")
+    $("#card-five-temp").text("Temp: " + oneCallResponse.daily[4].temp.day + " F")
+    $("#card-five-humid").text("Humidity: " + oneCallResponse.daily[4].humidity + " %")
 
-    
+
+
   })
-  
+
 }
 
 // allows view to previous searches on click
