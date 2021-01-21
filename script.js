@@ -51,6 +51,8 @@ function currentWeather(cityName) {
     .then(function (response) {
       console.log(response)
       $("#current-city").text(response.name)
+      var img = $("<img>").attr("src", "http://openweathermap.org/img/w/" + response.weather[0].icon + ".png");
+      $("#current-city").append(img)
       $("#current-temp").text("Temperature: " + response.main.temp + " F")
       $("#current-humid").text("Humidity: " + response.main.humidity + " %")
       $("#current-wind").text("Wind Speed: " + response.wind.speed + " MPH")
@@ -78,11 +80,18 @@ function oneCallWeather(lat, lon) {
     $("#uv-index-value").text(uvIndex)
 
     if (uvIndex > 5) {
-      $("#uv-index-value").addClass('severe')
+      $("#uv-index-value").removeClass('btn btn-warning')
+      $("#uv-index-value").removeClass('btn btn-success')
+      $("#uv-index-value").addClass('btn btn-danger')
     } else if (uvIndex < 5 && uvIndex > 2) {
-      $("#uv-index-value").addClass('moderate')
+      $("#uv-index-value").removeClass('btn btn-danger')
+      $("#uv-index-value").removeClass('btn btn-success')
+      $("#uv-index-value").addClass('btn btn-warning')
     } else {
-      $("#uv-index-value").addClass('favorable')
+      $("#uv-index-value").removeClass('btn btn-danger')
+      $("#uv-index-value").removeClass('btn btn-warning')
+      $("#uv-index-value").addClass('btn btn-success')
+      
     }
    
     //setting up forecast values
@@ -111,6 +120,12 @@ function oneCallWeather(lat, lon) {
     $("#card-four-humid").text("Humidity: " + oneCallResponse.daily[3].humidity + " %")
     $("#card-five-temp").text("Temp: " + oneCallResponse.daily[4].temp.day + " F")
     $("#card-five-humid").text("Humidity: " + oneCallResponse.daily[4].humidity + " %")
+    //weather icons
+    $("#icon-one").attr("src", "http://openweathermap.org/img/w/" + oneCallResponse.daily[0].weather[0].icon + ".png");
+    $("#icon-two").attr("src", "http://openweathermap.org/img/w/" + oneCallResponse.daily[1].weather[0].icon + ".png");
+    $("#icon-three").attr("src", "http://openweathermap.org/img/w/" + oneCallResponse.daily[2].weather[0].icon + ".png");
+    $("#icon-four").attr("src", "http://openweathermap.org/img/w/" + oneCallResponse.daily[3].weather[0].icon + ".png");
+    $("#icon-five").attr("src", "http://openweathermap.org/img/w/" + oneCallResponse.daily[4].weather[0].icon + ".png");
 
 
 
